@@ -17,6 +17,7 @@ func main(){
 	{
 		r1.POST("/productOn",controllers.ProductOn)
 		r1.POST("/productOff",controllers.ProductOff)
+
 	}
 }
 

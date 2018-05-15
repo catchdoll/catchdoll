@@ -43,3 +43,8 @@ func ProductOff(ctx *gin.Context){
 	}
 
 }
+
+
+func ProductEdit(ctx *gin.Context){
+
+}
