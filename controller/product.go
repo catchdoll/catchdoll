@@ -1,25 +1,26 @@
-package controllers
+package controller
 
 import (
 	"github.com/gin-gonic/gin"
 	"strconv"
 	"net/http"
-	"github.com/catchdoll/models"
+	"github.com/catchdoll/model"
 )
 
-func ProductOn(ctx *gin.Context){
+func ProductOnShelf(ctx *gin.Context){
 	name := ctx.PostForm("name")
 	seller, err := strconv.Atoi(ctx.PostForm("seller"))
+	imgUrl := ctx.PostForm("img_url")
 	if err != nil{
-
+		ctx.JSON(http.StatusBadRequest,gin.H{"message":"illegal param img_url"})
 	}
 	price, err := strconv.ParseFloat(ctx.PostForm("price"),64)
 	if err != nil{
-
+		ctx.JSON(http.StatusBadRequest,gin.H{"message":"illegal price"})
 	}
 
-	product := models.Product{Name:name,Seller:uint32(seller),Price:price}
-	models.DB.Create(&product)
+	product := model.Product{Name:name,Seller:uint32(seller),Price:price,ImgUrl:imgUrl,Status:model.PRODUCT_INITIAL}
+	model.DC.Debug().Create(&product)
 	if product.Id != 0 {
 		ctx.JSON(http.StatusOK,gin.H{"result":product,"message":"create product success"})
 	}else{
@@ -27,15 +28,16 @@ func ProductOn(ctx *gin.Context){
 	}
 }
 
-func ProductOff(ctx *gin.Context){
+
+func ProductOffShelf(ctx *gin.Context){
 	seller := ctx.PostForm("seller")
 	id := ctx.PostForm("id")
-	var product models.Product
-	models.DB.Where("id = ? and seller = ?", id, seller).Find(&product)
+	var product model.Product
+	model.DC.Where("id = ? and seller = ?", id, seller).Find(&product)
 	if product.Id == 0{
 		ctx.JSON(http.StatusNotFound,gin.H{"message":"can't find the product"})
 	}
-	models.DB.Delete(&product)
+	model.DC.Delete(&product)
 	if product.Id != 0{
 		ctx.JSON(http.StatusNotFound,gin.H{"message":"delete product failure"})
 	}else{
@@ -47,4 +49,7 @@ func ProductOff(ctx *gin.Context){
 
 func ProductEdit(ctx *gin.Context){
 
+
 }
+
+
