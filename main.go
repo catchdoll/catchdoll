@@ -52,12 +52,16 @@ func main() {
 	//}
 	router := gin.Default()
 	router.POST("/login",AuthMiddleware.LoginHandler)
-	r1 := router.Group("/product")
+	r1 := router.Group("/")
 	r1.Use(AuthMiddleware.MiddlewareFunc())
 	{
 		r1.POST("/hello",productHandler)
 		r1.POST("/productOn", controller.ProductOnShelf)
 		r1.POST("/productOff", controller.ProductOffShelf)
+		r1.GET("/machine_top/", controller.TopMachinesIndex)
+		r1.GET("/machine/:id", controller.MachineShow)
+		r1.POST("/machine_comment", controller.MachineCommentCreate)
+
 	}
 	router.Run()
 

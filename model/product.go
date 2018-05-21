@@ -8,6 +8,9 @@ type Product struct{
 	Status uint8
 	CreateTime string `sql:"-"`//自动生成
 	ImgUrl string
+	CategoryId uint32
+	Sort uint32 `sql:"-"`
+	Top uint32 `sql:"-"`
 }
 
 const (

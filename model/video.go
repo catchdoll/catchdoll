@@ -8,4 +8,6 @@ type video struct{
 	Title string
 	CreateTime string
 	Status uint8
+	Sort uint32
+	Top uint8
 }
