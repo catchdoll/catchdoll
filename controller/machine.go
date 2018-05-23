@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"github.com/catchdoll/api"
 	"fmt"
+	"github.com/catchdoll/util"
 )
 
 
@@ -29,7 +30,7 @@ func MachineShow(ctx *gin.Context){//展示单个娃娃机的信息(包含所有
 	}
 	machineId := paramMachineId
 	var machine model.Machine
-	model.DC.Where("Id = ?", machineId).Find(&machine)
+	model.DC.Where("id = ?", machineId).Find(&machine)
 	model.DC.Debug().Model(&machine).Related(&machine.MachineComments)
 	if machine.Id == 0{
 		ctx.JSON(http.StatusOK, gin.H{"status":api.RESULTNOTFOUND,"message":"can't find machine"})
@@ -53,14 +54,18 @@ func MachineCommentCreate(ctx *gin.Context){
 		return
 	}
 	machineId := uint32(paramMachineId)
-	paramUid, err := strconv.Atoi(ctx.PostForm("uid"))
-	fmt.Println(ctx.PostForm("uid"))
-	if err != nil {
-		fmt.Println(err)
-		ctx.JSON(http.StatusBadRequest,gin.H{"status":api.PARAMITERILLEGAL,"message":"illegal parameter uid_id"})
-		return
+	//paramUid, err := strconv.Atoi(ctx.PostForm("uid"))
+	//fmt.Println(ctx.PostForm("uid"))
+	//if err != nil {
+	//	fmt.Println(err)
+	//	ctx.JSON(http.StatusBadRequest,gin.H{"status":api.PARAMITERILLEGAL,"message":"illegal parameter uid_id"})
+	//	return
+	//}
+	//uid := uint32(paramUid)
+	uid, err := util.GetUid(ctx)
+	if err != nil{
+		ctx.JSON(http.StatusUnauthorized,gin.H{"status":api.UNAUTHORIZED,"message":"authorization problem"})
 	}
-	uid := uint32(paramUid)
 	//查找有没有这台机器
 	var machine model.Machine
 	model.DC.Where("Id = ?", machineId).Find(&machine)

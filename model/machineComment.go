@@ -6,5 +6,5 @@ type MachineComment struct{
 	Uid uint32 `json:"uid"`
 	Score uint8 `json:"score"`
 	Content string `json:"content"`
-	CreateTime string `sql:"-" json:"create_time"`
+	CreateTime string `sql:"-";json:"create_time"`
 }

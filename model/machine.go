@@ -4,7 +4,7 @@ type Machine struct{
 	Id uint32 `gorm:"primary_key"`
 	Owner uint32 `json:"owner"`
 	Url string `json:"url"`
-	CreateTime string`json:"create_time"`
+	CreateTime string`json:"create_time";sql:"-"`
 	Address string `json:"address"`
 	Coordinate string `json:"coordinate"`
 	Creator uint32 `json:"creator"`

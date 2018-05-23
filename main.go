@@ -25,6 +25,7 @@ func main() {
 				"message": message,
 			})
 		},
+		//PayloadFunc:util.Payload,
 		// TokenLookup is a string in the form of "<source>:<name>" that is used
 		// to extract token from the request.
 		// Optional. Default value "header:Authorization".
