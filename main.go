@@ -64,7 +64,7 @@ func main() {
 		r1.POST("/machine_comment", controller.MachineCommentCreate)
 
 	}
-	router.Run()
+	router.Run(":8000")
 
 }
 

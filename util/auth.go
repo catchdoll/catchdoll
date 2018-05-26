@@ -10,7 +10,7 @@ import (
 
 func Authenticate(userId string, password string, c *gin.Context) (string, bool) {
 	var user model.User
-	model.DC.Debug().Where("id = ? and password = ?",userId,password).Find(&user)
+	model.DC.Debug().Where("Id = ? and password = ?",userId,password).Find(&user)
 	return userId, user.Id != 0
 }
 
