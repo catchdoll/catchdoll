@@ -20,15 +20,8 @@ func VideoCommentCreate(ctx *gin.Context){
 
 }
 
-func VideoCommentIndex(ctx *gin.Context){
 
-}
-
-func VideoCommentShow(ctx *gin.Context){
-
-}
-
-func TopVideoIndex(ctx *gin.Context){
+func TopVideosIndex(ctx *gin.Context){
 	var videos []model.Video
 	model.DC.Where("top = 1").Find(&videos)
 	if len(videos) != 0{
@@ -39,8 +32,8 @@ func TopVideoIndex(ctx *gin.Context){
 }
 
 func VideoShow(ctx *gin.Context){
-	video_id, err := strconv.Atoi(ctx.PostForm("video_id"))
-	if err != nil || video_id == 0{
+	videoId, err := strconv.Atoi(ctx.PostForm("video_id"))
+	if err != nil || videoId == 0{
 		ctx.JSON(http.StatusBadRequest,gin.H{"status":api.PARAMITERILLEGAL,"message":"illegal filed video_id"})
 	}
 	var video model.Video
@@ -48,6 +41,13 @@ func VideoShow(ctx *gin.Context){
 	if video.Id == 0{
 		ctx.JSON(http.StatusNotFound,gin.H{"status":api.RESULTNOTFOUND,"message":"sorry, can't find any video"})
 	}
-	model.DC.Model(&video).Related(&video.VideoComments)
 	ctx.JSON(http.StatusOK,gin.H{"status":api.OK, "result":video})
+}
+
+func VideoCreate(ctx *gin.Context){
+
+}
+
+func VideoCommentsCreate(ctx *gin.Context){
+
 }

@@ -5,46 +5,19 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/catchdoll/model"
 	"github.com/catchdoll/controller"
-	"time"
-	"github.com/appleboy/gin-jwt"
-	"net/http"
 	"github.com/catchdoll/util"
+	"github.com/catchdoll/conf"
 )
 
 func main() {
-	AuthMiddleware := &jwt.GinJWTMiddleware{
-		Realm:      "catchdoll",
-		Key:        []byte("catchdollsecrect"),
-		Timeout:    time.Hour,
-		MaxRefresh: time.Hour,
-		Authenticator: util.Authenticate,
-		Authorizator: util.Authorize,
-		Unauthorized: func (c *gin.Context, code int, message string) {
-			c.JSON(code, gin.H{
-				"code":    code,
-				"message": message,
-			})
-		},
-		//PayloadFunc:util.Payload,
-		// TokenLookup is a string in the form of "<source>:<name>" that is used
-		// to extract token from the request.
-		// Optional. Default value "header:Authorization".
-		// Possible values:
-		// - "header:<name>"
-		// - "query:<name>"
-		// - "cookie:<name>"
-		TokenLookup: "header:Authorization",
-		// TokenLookup: "query:token",
-		// TokenLookup: "cookie:token",
-
-		// TokenHeadName is a string in the header. Default value is "Bearer"
-		TokenHeadName: "Bearer",
-
-		// TimeFunc provides the current time. You can override it to use another time value. This is useful for testing or if your server uses a different time zone than your tokens.
-		TimeFunc: time.Now,
+	if conf.InitConfig() != nil{
+		panic("can't initial configuration")
 	}
 	if model.InitDB() != nil {
 		panic("can't connect to database")
+	}
+	if !model.InitRedis(){
+		panic("can't connect to redis")
 	}
 	//var err error
 	//DC, err = gorm.Open("mysql","root:194466@/doll_machine?charset=utf8")
@@ -52,26 +25,25 @@ func main() {
 	//	panic("db connection failure")
 	//}
 	router := gin.Default()
-	router.POST("/login",AuthMiddleware.LoginHandler)
+	//router.POST("/login",AuthMiddleware.LoginHandler)
+	router.GET("/wxLogin",util.WxLogin)
 	r1 := router.Group("/")
-	r1.Use(AuthMiddleware.MiddlewareFunc())
+	r1.Use(util.WxAuth)
 	{
-		r1.POST("/hello",productHandler)
-		r1.POST("/productOn", controller.ProductOnShelf)
-		r1.POST("/productOff", controller.ProductOffShelf)
-		r1.GET("/machine_top/", controller.TopMachinesIndex)
-		r1.GET("/machine/:id", controller.MachineShow)
-		r1.POST("/machine_comment", controller.MachineCommentCreate)
+		//r1.POST("/productOn", controller.ProductOnShelf)//商品上架
+		//r1.POST("/productOff", controller.ProductOffShelf)//商品下架
+		r1.GET("/machine_top", controller.TopMachinesIndex)//置顶娃娃机信息
+		r1.GET("/machine/:id", controller.MachineShow)//单个娃娃机信息(含评论)
+		r1.POST("/machine_comment", controller.MachineCommentCreate)//评论娃娃机
+		//r1.GET("/video_top/", controller.TopVideosIndex)
+		//r1.GET("/video/:id",controller.VideoShow)
+		r1.POST("/machine",controller.MachineCreate)
 
 	}
-	router.Run(":8000")
+	router.Run(":"+conf.GlobalConf.ServerPort)
 
 }
 
-func productHandler(c *gin.Context){
-	key := c.PostForm("key")
-	c.JSON(http.StatusOK,gin.H{"result":key})
-}
 
 //var DC *gorm.DC
 

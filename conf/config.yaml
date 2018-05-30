@@ -1,0 +1,9 @@
+#dsn: root:194466@/doll_machine?charset=utf8
+dsn: catchdoll:+HNbtdBY@tcp(47.98.55.170:3306)/catchdoll?charset=utf8
+redis_addr: localhost:6379
+redis_password:
+redis_db: 0
+server_port: 8000
+wx_appid: wx09d7722244d6dc84
+wx_appsecret: 61a701a90198df394274fa68b00eda41
+jwt_secret: Jacku

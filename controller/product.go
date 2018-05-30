@@ -7,6 +7,15 @@ import (
 	"github.com/catchdoll/model"
 )
 
+type(
+	ProductOnShelfParams struct{
+		Name string `json:"name"`
+		Seller uint32 `json:"seller"`
+		ImgUrl string `json:"img_url"`
+
+	}
+)
+
 func ProductOnShelf(ctx *gin.Context){
 	name := ctx.PostForm("name")
 	seller, err := strconv.Atoi(ctx.PostForm("seller"))

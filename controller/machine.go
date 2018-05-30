@@ -10,6 +10,19 @@ import (
 	"github.com/catchdoll/util"
 )
 
+type(
+	MachineCreateParams struct{
+		Address string `json:"address"`
+		Lat string `json:"lat"`
+		Lon string `json:"lon"`
+		Url string `json:"url"`
+	}
+	MachineCommentCreateParams struct{
+		Content string `json:"content"`
+		MachineId uint32 `json:"machine_id"`
+		Score uint8 `json:"score"`
+	}
+)
 
 func TopMachinesIndex(ctx *gin.Context){//查找所有娃娃机信息
 	var machines []model.Machine
@@ -19,6 +32,7 @@ func TopMachinesIndex(ctx *gin.Context){//查找所有娃娃机信息
 		return
 	}
 	ctx.JSON(http.StatusOK,gin.H{"status":api.OK,"message":"success","result":machines})
+	return
 }
 
 func MachineShow(ctx *gin.Context){//展示单个娃娃机的信息(包含所有评论)
@@ -31,7 +45,6 @@ func MachineShow(ctx *gin.Context){//展示单个娃娃机的信息(包含所有
 	machineId := paramMachineId
 	var machine model.Machine
 	model.DC.Where("id = ?", machineId).Find(&machine)
-	model.DC.Debug().Model(&machine).Related(&machine.MachineComments)
 	if machine.Id == 0{
 		ctx.JSON(http.StatusOK, gin.H{"status":api.RESULTNOTFOUND,"message":"can't find machine"})
 		return
@@ -41,19 +54,11 @@ func MachineShow(ctx *gin.Context){//展示单个娃娃机的信息(包含所有
 }
 
 func MachineCommentCreate(ctx *gin.Context){
-	content := ctx.PostForm("content")
-	paramScore, err := strconv.Atoi(ctx.PostForm("score"))
-	if err != nil || paramScore > 5 || paramScore < 1{
-		ctx.JSON(http.StatusBadRequest,gin.H{"status":api.PARAMITERILLEGAL,"message":"illegal parameter score"})
+	var input MachineCommentCreateParams
+	if ctx.BindJSON(&input) != nil{
+		ctx.JSON(http.StatusBadRequest,gin.H{"status":api.PARAMITERILLEGAL,"message":"plz check the params format"})
 		return
 	}
-	score := uint8(paramScore)
-	paramMachineId, err := strconv.Atoi(ctx.PostForm("machine_id"))
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest,gin.H{"status":api.PARAMITERILLEGAL,"message":"illegal parameter machine_id"})
-		return
-	}
-	machineId := uint32(paramMachineId)
 	//paramUid, err := strconv.Atoi(ctx.PostForm("uid"))
 	//fmt.Println(ctx.PostForm("uid"))
 	//if err != nil {
@@ -62,30 +67,30 @@ func MachineCommentCreate(ctx *gin.Context){
 	//	return
 	//}
 	//uid := uint32(paramUid)
-	uid, err := util.GetUid(ctx)
-	if err != nil{
-		ctx.JSON(http.StatusUnauthorized,gin.H{"status":api.UNAUTHORIZED,"message":"authorization problem"})
-	}
 	//查找有没有这台机器
+	uid ,ok := util.GetUid(ctx)
+	if input.MachineId == 0 || input.Score > 5 || !ok{
+		ctx.JSON(http.StatusBadRequest,gin.H{"status":api.PARAMITERILLEGAL,"message":"plz check the params format"})
+		return
+	}
 	var machine model.Machine
-	model.DC.Where("Id = ?", machineId).Find(&machine)
+	model.DC.Where("Id = ?", input.MachineId).Find(&machine)
 	if machine.Id == 0{
 		ctx.JSON(http.StatusBadRequest,gin.H{"status":api.PARAMITERILLEGAL,"message":"can't find machine with specified machine_id"})
 		return
 	}
 	var machineComment model.MachineComment
-	model.DC.Where("machine_id = ? and uid = ?",machineId, uid).Find(&machineComment)
+	model.DC.Where("machine_id = ? and uid = ?",input.MachineId, uid).Find(&machineComment)
 	if machineComment.Id != 0{
 		ctx.JSON(http.StatusBadRequest,gin.H{"status":api.PARAMITERILLEGAL,"message":"you have commented, do not repeat"})
 		return
 	}
 	machineComment = model.MachineComment{
-		Content:content,
-		MachineId:machineId,
-		Score:score,
+		Content:input.Content,
+		MachineId:input.MachineId,
+		Score:input.Score,
 		Uid:uid,
 	}
-	fmt.Println(score)
 	model.DC.Create(&machineComment)
 	if machineComment.Id == 0{
 		ctx.JSON(http.StatusInternalServerError,gin.H{"status":api.DATAORPERATIONFAILURE, "message":"machine creation failure"})
@@ -95,21 +100,31 @@ func MachineCommentCreate(ctx *gin.Context){
 
 }
 
-func MachineCommentIndex(ctx *gin.Context){
-
+func MachineCreate(ctx *gin.Context){
+	var input MachineCreateParams
+	if ctx.BindJSON(&input) != nil{
+		ctx.JSON(http.StatusBadRequest,gin.H{"status":api.PARAMITERILLEGAL,"message":"plz check the params format"})
+		return
+	}
+	uid, ok := util.GetUid(ctx)
+	fmt.Println("uid is",uid)
+	if input.Address == "" || input.Url == "" ||  !ok{
+		ctx.JSON(http.StatusBadRequest,gin.H{"status":api.PARAMITERILLEGAL, "message":"plz check the params format"})
+		return
+	}
+	newMachine := model.Machine{
+		Url:input.Url,
+		Address:input.Address,
+		Lat:input.Lat,
+		Lon:input.Lon,
+		CreatorId:uid,
+	}
+	model.DC.Debug().Create(&newMachine)
+	if newMachine.Id == 0{
+		ctx.JSON(http.StatusInternalServerError,gin.H{"status":api.DATAORPERATIONFAILURE, "message":"create machine failure"})
+		return
+	}
+	ctx.JSON(http.StatusOK,gin.H{"status":api.OK,"message":"success","result":newMachine})
 }
-
-func MachineCommentShow(ctx *gin.Context){
-
-}
-
-func MachineCommentDelete(ctx *gin.Context){
-
-}
-
-func MachineTest(ctx *gin.Context){
-	ctx.JSON(http.StatusOK,gin.H{"result":"ok"})
-}
-
 
 
