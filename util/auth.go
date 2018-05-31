@@ -96,7 +96,7 @@ func WxAuth(ctx *gin.Context) {
 	reqToken := ctx.Request.Header.Get("Authorization")
 	splitToken := strings.Split(reqToken, " ")
 	if splitToken[0] != "Bearer" {
-		ctx.JSON(http.StatusUnauthorized, gin.H{"message": "mark1"})
+		ctx.JSON(http.StatusUnauthorized, gin.H{"message": "unauthorized"})
 		ctx.Abort()
 		return
 	}
@@ -109,7 +109,7 @@ func WxAuth(ctx *gin.Context) {
 	})
 	if err != nil {
 		//fmt.Println(err)
-		ctx.JSON(http.StatusUnauthorized, gin.H{"message": "mark2"})
+		ctx.JSON(http.StatusUnauthorized, gin.H{"message": "unauthorized"})
 		ctx.Abort()
 		return
 	}
@@ -126,7 +126,7 @@ func WxAuth(ctx *gin.Context) {
 		ctx.Next()
 		return
 	}
-	ctx.JSON(http.StatusUnauthorized, gin.H{"message": "mark4"})
+	ctx.JSON(http.StatusUnauthorized, gin.H{"message": "un"})
 	ctx.Abort()
 	return
 }
