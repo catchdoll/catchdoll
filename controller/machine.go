@@ -28,7 +28,7 @@ func TopMachinesIndex(ctx *gin.Context){//查找所有娃娃机信息
 	var machines []model.Machine
 	model.DC.Where("top = 1").Find(&machines)
 	if len(machines) == 0{
-		ctx.JSON(http.StatusNotFound,gin.H{"status":api.RESULTNOTFOUND,"message":"no top machines found"})
+		ctx.JSON(http.StatusOK,gin.H{"status":api.RESULTNOTFOUND,"message":"no top machines found"})
 		return
 	}
 	ctx.JSON(http.StatusOK,gin.H{"status":api.OK,"message":"success","result":machines})
