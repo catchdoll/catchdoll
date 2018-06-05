@@ -23,8 +23,7 @@ func WxLogin(ctx *gin.Context) {
 	}
 	//用code参数请求wx后台接口获取openid和sessionkey
 	client := http.Client{}
-	req, err := http.NewRequest("GET", "https://api.weixin.qq.com/sns/jscode2session?appid="+conf.GlobalConf.
-		WxAppid+ "&secret=" + conf.GlobalConf.WxAppsecret + "&js_code=" + code + "&grant_type=authorization_code", nil)
+	req, err := http.NewRequest("GET", "https://api.weixin.qq.com/sns/jscode2session?appid="+conf.GlobalConf.WxAppid+ "&secret=" + conf.GlobalConf.WxAppsecret + "&js_code=" + code + "&grant_type=authorization_code", nil)
 	if err != nil {
 		ctx.JSON(http.StatusUnauthorized, gin.H{"message": "unauthorized"})
 		return

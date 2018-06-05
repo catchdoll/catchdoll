@@ -35,11 +35,13 @@ func main() {
 		r1.GET("/machine_top", controller.TopMachinesIndex)//置顶娃娃机信息
 		r1.GET("/machine/:id", controller.MachineShow)//单个娃娃机信息(含评论)
 		r1.POST("/machine_comment", controller.MachineCommentCreate)//评论娃娃机
+		r1.GET("/machine_comment/:id", controller.MachineCommentIndex)
 		//r1.GET("/video_top/", controller.TopVideosIndex)
 		//r1.GET("/video/:id",controller.VideoShow)
 		r1.POST("/machine",controller.MachineCreate)
 
 	}
+	router.GET("/lbsTest",controller.LbsTest)
 	router.Run(":"+conf.GlobalConf.ServerPort)
 
 }

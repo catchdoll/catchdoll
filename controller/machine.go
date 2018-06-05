@@ -8,6 +8,8 @@ import (
 	"github.com/catchdoll/api"
 	"fmt"
 	"github.com/catchdoll/util"
+	"io/ioutil"
+	"net/url"
 )
 
 type(
@@ -15,12 +17,15 @@ type(
 		Address string `json:"address"`
 		Lat string `json:"lat"`
 		Lon string `json:"lon"`
-		Url string `json:"url"`
+		//Url string `json:"url"`
 	}
 	MachineCommentCreateParams struct{
 		Content string `json:"content"`
 		MachineId uint32 `json:"machine_id"`
 		Score uint8 `json:"score"`
+	}
+	MachineCommentIndexParams struct{
+		MachineId uint32 `json:"machine_id"`
 	}
 )
 
@@ -108,23 +113,105 @@ func MachineCreate(ctx *gin.Context){
 	}
 	uid, ok := util.GetUid(ctx)
 	fmt.Println("uid is",uid)
-	if input.Address == "" || input.Url == "" ||  !ok{
+	if input.Address == ""  ||  !ok{
 		ctx.JSON(http.StatusBadRequest,gin.H{"status":api.PARAMITERILLEGAL, "message":"plz check the params format"})
 		return
 	}
+
+	ts := model.DC.Begin()
+	lbsId, err := util.CreateLbsAddress(input.Address,input.Lat, input.Lon)
+	if err != nil{
+		ts.Rollback()
+		ctx.JSON(http.StatusInternalServerError,gin.H{"status":api.DATAORPERATIONFAILURE, "message":"create machine failure"})
+		return
+	}
 	newMachine := model.Machine{
-		Url:input.Url,
+		//Url:input.Url,
 		Address:input.Address,
 		Lat:input.Lat,
 		Lon:input.Lon,
 		CreatorId:uid,
+		LbsId:lbsId,
 	}
-	model.DC.Debug().Create(&newMachine)
+	ts.Debug().Create(&newMachine)
 	if newMachine.Id == 0{
+		ts.Rollback()
+		//todo lbs表未创建成功本地表却无法创建，必须记录下来，作异常处理
 		ctx.JSON(http.StatusInternalServerError,gin.H{"status":api.DATAORPERATIONFAILURE, "message":"create machine failure"})
 		return
 	}
+
 	ctx.JSON(http.StatusOK,gin.H{"status":api.OK,"message":"success","result":newMachine})
 }
+
+func MachineCommentIndex(ctx *gin.Context){
+	paramMachineId, err := strconv.Atoi(ctx.Param("id"))
+	if err != nil || paramMachineId == 0{
+		ctx.JSON(http.StatusBadRequest,gin.H{"status":api.PARAMITERILLEGAL, "message":"illegal param id"})
+		return
+	}
+	var machine model.Machine
+	var machineComments []model.MachineComment
+	model.DC.Where("id = ?", paramMachineId).Find(&machine)
+	if machine.Id == 0{
+		ctx.JSON(http.StatusBadRequest,gin.H{"status":api.PARAMITERILLEGAL, "message":"can't find machine by id"})
+		return
+	}
+	model.DC.Model(&machine).Related(machineComments)
+	ctx.JSON(http.StatusOK,gin.H{"status":api.OK,"message":"success","result":machineComments})
+}
+
+func MachineCollect(ctx *gin.Context){//收藏娃娃机
+	machineId := ctx.MustGet("id")
+	if machineId == 0{
+		ctx.JSON(http.StatusBadRequest,gin.H{"status":api.PARAMITERILLEGAL,"message":"illegal param id"})
+		return
+	}
+	var machineCollectRecord model.MachineCollect
+	model.DC.Where("id = ?", machineId).Find(&machineCollectRecord)
+	if machineCollectRecord.Id != 0{
+		ctx.JSON(http.StatusOK,gin.H{"status":api.DATAORPERATIONFAILURE,"message":"collect machine failure"})
+		return
+	}
+	ctx.JSON(http.StatusOK,gin.H{"stattus":api.OK,"message":"success"})
+}
+
+
+func MachineShare(ctx *gin.Context){//分享娃娃机
+
+}
+
+func MachineVote(ctx *gin.Context){//给娃娃机点赞
+
+}
+
+func LbsTest(ctx *gin.Context){
+	uri := "/geodata/v4/poi/create"
+	form := url.Values{
+		"ak":{"6wVrtUncrfIq5SE4AlYtrCRZtDtsT1kP"},
+		//"id":{"190008"},
+		//"name":{"doll_machine_address"},
+		"coord_type":{"3"},
+		"geotable_id":{"1000003990"},
+		"latitude":{"22.56124"},
+		"longitude":{"114.106875"},
+		"title":{"复制"},
+	}
+	SNCode, err := util.GetLbsSN(uri,form)
+	if err != nil{
+		ctx.JSON(http.StatusBadRequest,gin.H{"message":"error get ak"})
+	}
+	form.Add("sn",SNCode)
+	resp, err := http.PostForm("http://api.map.baidu.com/geodata/v4/poi/create",form)
+	if err != nil{
+		ctx.JSON(http.StatusBadRequest,gin.H{"message":"request failed"})
+	}
+	result, err := ioutil.ReadAll(resp.Body)
+	fmt.Println(string(result))
+}
+
+
+
+
 
 

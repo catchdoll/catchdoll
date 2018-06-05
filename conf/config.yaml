@@ -7,3 +7,6 @@ server_port: 8000
 wx_appid: wx09d7722244d6dc84
 wx_appsecret: 61a701a90198df394274fa68b00eda41
 jwt_secret: Jacku
+lbs_ak: 6wVrtUncrfIq5SE4AlYtrCRZtDtsT1kP
+lbs_sk: gtEL6429GzilArotmkT44PPgoH2XPKvq
+lbs_geotableid: 1000003990

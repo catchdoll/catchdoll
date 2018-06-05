@@ -15,6 +15,8 @@ type Configuration struct{
 	WxAppid string `yaml:"wx_appid"`
 	WxAppsecret string `yaml:"wx_appsecret"`
 	JwtSecret string `yaml:"jwt_secret"`
+	LbsAk string `yaml:"lbs_ak"`
+	LbsSk string `yaml:"lbs_sk"`
 }
 
 var GlobalConf *Configuration

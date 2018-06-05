@@ -3,7 +3,7 @@ package model
 type Machine struct{
 	Id uint32 `gorm:"primary_key"`
 	OwnerId uint32 `json:"owner_id"`
-	Url string `json:"url"`
+	LbsId string `json:"lbs_id"`
 	CreateTime string`json:"create_time" sql:"-"`
 	Address string `json:"address"`
 	CreatorId uint32 `json:"creator_id"`
