@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"io/ioutil"
 	"encoding/json"
+	"fmt"
 )
 
 func GetLbsSN( uri string, params url.Values )(string, error){
@@ -37,7 +38,7 @@ func CreateLbsAddress(address string, longitude string, latitude string)(string,
 		"geotable_id":{"1000003990"},
 		"latitude":{"22.56124"},
 		"longitude":{"114.106875"},
-		"title":{"复制"},
+		"title":{address},
 	}
 	SNCode, err := GetLbsSN(uri,form)
 	if err != nil{
@@ -49,7 +50,7 @@ func CreateLbsAddress(address string, longitude string, latitude string)(string,
 		return "", err
 	}
 	result, err := ioutil.ReadAll(resp.Body)
-	//fmt.Println(string(result))
+	fmt.Println(string(result))
 	var jsonReturn LbsCreateAddrReturn
 	err = json.Unmarshal(result, &jsonReturn)
 	if err != nil{
